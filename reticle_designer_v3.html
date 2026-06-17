@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reticle Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0A0A0C; --panel: #111115; --border: #2A2A32;
+  --gold: #C8A84B; --gold-dim: #8A7030;
+  --text: #D4D4D8; --text-dim: #6B6B78;
+  --red: #E05252; --green: #4CAF7A; --blue: #5B9BD5;
+  --mono: 'JetBrains Mono', monospace; --sans: 'Inter', sans-serif;
+}
+body {
+  background: var(--bg); color: var(--text); font-family: var(--sans);
+  height: 100vh; display: grid;
+  grid-template-rows: 44px 1fr; overflow: hidden;
+}
+header {
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 18px; gap: 14px;
+}
+.logo { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .15em; color: var(--gold); }
+.sep { width: 1px; height: 18px; background: var(--border); }
+.subtitle { font-size: 10px; color: var(--text-dim); letter-spacing: .08em; text-transform: uppercase; }
+.badge { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--gold-dim); letter-spacing: .1em; }
+
+.workspace { display: grid; grid-template-columns: 270px 1fr 230px; overflow: hidden; }
+
+.panel {
+  background: var(--panel); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.panel-right { border-right: none; border-left: 1px solid var(--border); }
+
+.sec-label {
+  font-size: 9px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--gold-dim); font-weight: 600;
+  margin-bottom: 9px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
+}
+
+label { font-size: 11px; color: var(--text-dim); display: block; margin-bottom: 3px; }
+
+select, input[type=number], input[type=text] {
+  width: 100%; background: #18181E; border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  border-radius: 3px; padding: 5px 8px; outline: none; appearance: none;
+}
+select:focus, input:focus { border-color: var(--gold-dim); }
+select option { background: #18181E; }
+
+input[type=range] {
+  width: 100%; appearance: none; height: 3px; background: var(--border);
+  border-radius: 2px; outline: none; cursor: pointer; accent-color: var(--gold);
+  margin-top: 4px;
+}
+
+.row { margin-bottom: 9px; }
+.val { font-family: var(--mono); font-size: 11px; color: var(--gold); text-align: right; margin-top: 2px; }
+
+.pair { display: flex; gap: 6px; align-items: flex-end; }
+.pair > * { flex: 1; }
+
+.tog-group { display: flex; gap: 3px; flex-wrap: wrap; }
+.tog {
+  font-family: var(--mono); font-size: 9px; padding: 4px 7px;
+  background: #18181E; border: 1px solid var(--border); color: var(--text-dim);
+  border-radius: 3px; cursor: pointer; letter-spacing: .04em; transition: all .12s;
+}
+.tog.on { background: var(--gold-dim); border-color: var(--gold); color: #fff; }
+
+.chk {
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  font-size: 11px; color: var(--text-dim); margin-bottom: 5px; user-select: none;
+}
+.chk input[type=checkbox] { width: 13px; height: 13px; accent-color: var(--gold); cursor: pointer; }
+.chk:hover { color: var(--text); }
+
+/* TARGET CARD */
+.target-card {
+  background: #16161C; border: 1px solid var(--border); border-radius: 5px;
+  padding: 9px 10px; margin-bottom: 8px;
+}
+.target-card-head {
+  display: grid; grid-template-columns: 1fr 56px 24px; gap: 5px;
+  align-items: center; margin-bottom: 7px;
+}
+.target-card-head input[type=text]   { font-size: 10px; padding: 4px 6px; }
+.target-card-head input[type=number] { font-size: 10px; padding: 4px 6px; }
+.del-btn {
+  background: none; border: 1px solid var(--border); color: var(--text-dim);
+  border-radius: 3px; cursor: pointer; font-size: 13px; line-height: 1;
+  padding: 2px 4px; transition: all .12s;
+}
+.del-btn:hover { border-color: var(--red); color: var(--red); }
+.target-card-controls { display: flex; gap: 4px; flex-wrap: wrap; }
+.target-card-controls .tog { font-size: 8.5px; padding: 3px 6px; }
+.target-color-dot {
+  width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+  margin-right: 5px; vertical-align: middle;
+}
+.add-btn {
+  width: 100%; background: #18181E; border: 1px solid var(--border);
+  color: var(--gold-dim); font-family: var(--mono); font-size: 10px;
+  border-radius: 3px; cursor: pointer; padding: 5px; letter-spacing: .08em;
+  transition: all .12s; margin-top: 4px;
+}
+.add-btn:hover { border-color: var(--gold); color: var(--gold); }
+.reset-btn {
+  width: 100%; background: none; border: 1px solid var(--border);
+  color: var(--text-dim); font-family: var(--mono); font-size: 9px;
+  border-radius: 3px; cursor: pointer; padding: 4px; letter-spacing: .06em;
+  transition: all .12s; margin-top: 6px;
+}
+.reset-btn:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* CANVAS */
+.canvas-area {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #050507; position: relative; overflow: hidden;
+}
+.scope-wrap {
+  position: relative;
+  height: calc(100vh - 44px - 40px);
+  aspect-ratio: 1;
+  max-width: 90%;
+}
+canvas#rc { width: 100%; height: 100%; border-radius: 50%; display: block; }
+.lens-glare {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(ellipse at 28% 26%, rgba(255,255,255,.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+.lens-ring {
+  position: absolute; inset: -7px; border-radius: 50%;
+  border: 7px solid #1A1A20;
+  box-shadow: 0 0 0 2px #2C2C36, 0 0 44px rgba(0,0,0,.85), inset 0 0 0 2px #08080C;
+  pointer-events: none;
+}
+.info-bar {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 9px; color: var(--text-dim);
+  letter-spacing: .1em; white-space: nowrap; display: flex; gap: 14px;
+}
+.info-bar b { color: var(--gold); font-weight: 500; }
+.drag-hint {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 9px; color: var(--text-dim);
+  letter-spacing: .08em; opacity: .55;
+}
+
+/* RIGHT PANEL */
+.dtable {
+  width: 100%; font-family: var(--mono); font-size: 10px; border-collapse: collapse;
+}
+.dtable th {
+  color: var(--gold-dim); text-align: left; padding: 3px 5px;
+  border-bottom: 1px solid var(--border); font-weight: 500; letter-spacing: .05em;
+}
+.dtable td { padding: 3px 5px; border-bottom: 1px solid #1A1A20; }
+.dtable tr:hover td { background: #16161C; }
+.c-neg  { color: var(--red); }
+.c-pos  { color: var(--text-dim); }
+.c-zero { color: var(--green); }
+.c-dim  { color: var(--text-dim); }
+
+.stat-block {
+  background: #18181E; border: 1px solid var(--border); border-radius: 4px; padding: 9px 11px;
+}
+.stat-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.stat-row:last-child { margin-bottom: 0; }
+.sk { font-size: 10px; color: var(--text-dim); }
+.sv { font-family: var(--mono); font-size: 11px; color: var(--gold); }
+
+.zero-badges { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+.zbadge {
+  font-family: var(--mono); font-size: 9px; padding: 3px 7px; border-radius: 3px;
+  letter-spacing: .06em;
+}
+.zbadge.near { background: rgba(91,155,213,.15); border: 1px solid rgba(91,155,213,.4); color: var(--blue); }
+.zbadge.far  { background: rgba(76,175,122,.15); border: 1px solid rgba(76,175,122,.4); color: var(--green); }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⊕ Reticle Designer</div>
+  <div class="sep"></div>
+  <div class="subtitle">BDC · Subtension · Ballistics</div>
+  <div class="badge" id="hdrBadge">—</div>
+</header>
+
+<div class="workspace">
+
+<!-- ══ LEFT PANEL ══════════════════════════════════════════════ -->
+<div class="panel">
+
+  <div>
+    <div class="sec-label">Ammunition</div>
+    <div class="row">
+      <label>Cartridge</label>
+      <select id="cartridge">
+        <option value="308">7.62×51mm NATO (.308 Win)</option>
+        <option value="556">5.56×45mm NATO (.223 Rem)</option>
+        <option value="6.5cm">6.5mm Creedmoor</option>
+        <option value="300wm">300 Winchester Mag</option>
+        <option value="338lm">338 Lapua Mag</option>
+        <option value="50bmg">.50 BMG</option>
+        <option value="300blk">300 Blackout</option>
+        <option value="9mm">9mm Luger</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Bullet Weight</label>
+      <select id="bulletWeight"></select>
+    </div>
+    <div class="row">
+      <label>Muzzle Velocity (fps) <span class="val" id="mvVal" style="display:inline;float:right"></span></label>
+      <input type="range" id="mv" min="800" max="3800" value="2600">
+    </div>
+    <div class="row">
+      <label>BC (G7)</label>
+      <input type="number" id="bc" value="0.275" step="0.005" min="0.05" max="1.2">
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">Optic Setup</div>
+    <div class="row">
+      <label>Height Over Bore (in) <span class="val" id="hobVal" style="display:inline;float:right"></span></label>
+      <input type="range" id="hob" min="0.5" max="4.0" step="0.1" value="1.5">
+    </div>
+    <div class="row">
+      <label>Far Zero (yds)</label>
+      <div class="pair">
+        <input type="range" id="zeroSlider" min="25" max="600" step="25" value="200">
+        <input type="number" id="zeroNum" value="200" min="25" max="600" step="25" style="width:64px;flex:none">
+      </div>
+    </div>
+    <div class="row">
+      <label>Unit System</label>
+      <div class="tog-group">
+        <button class="tog on" data-unit="mil">MIL</button>
+        <button class="tog" data-unit="moa">MOA</button>
+      </div>
+    </div>
+    <div class="row">
+      <label>Reticle Scale (px/unit) <span class="val" id="scaleVal" style="display:inline;float:right"></span></label>
+      <input type="range" id="scale" min="20" max="120" value="60">
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">Environment</div>
+    <div class="row">
+      <label>Altitude (ft)</label>
+      <select id="altitude">
+        <option value="0">Sea Level</option>
+        <option value="1000">1,000 ft</option>
+        <option value="3000">3,000 ft</option>
+        <option value="5000">5,000 ft</option>
+        <option value="8000">8,000 ft</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Temperature (°F) <span class="val" id="tempVal" style="display:inline;float:right"></span></label>
+      <input type="range" id="temp" min="0" max="110" value="59">
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">Overlay Options</div>
+    <label class="chk"><input type="checkbox" id="showBDC"    checked> BDC hash marks</label>
+    <label class="chk"><input type="checkbox" id="showLabels" checked> Range labels</label>
+    <label class="chk"><input type="checkbox" id="showWind">           Wind drift (10 mph)</label>
+    <label class="chk"><input type="checkbox" id="showPath">           Trajectory arc</label>
+    <label class="chk"><input type="checkbox" id="showTarget" checked> Target-size references</label>
+  </div>
+
+  <div>
+    <div class="sec-label">Target Reference Sizes</div>
+    <div id="targetCards"></div>
+    <button class="add-btn" id="addTarget">+ ADD SIZE</button>
+    <button class="reset-btn" id="resetLayout">RESET BRACKET POSITIONS</button>
+  </div>
+
+</div>
+
+<!-- ══ CANVAS ══════════════════════════════════════════════════ -->
+<div class="canvas-area">
+  <div class="scope-wrap">
+    <canvas id="rc" width="1200" height="1200"></canvas>
+    <div class="lens-glare"></div>
+    <div class="lens-ring"></div>
+  </div>
+  <div class="drag-hint">DRAG BRACKETS TO REPOSITION</div>
+  <div class="info-bar">
+    <span>NEAR ZERO <b id="ibNear">—</b></span>
+    <span>·</span>
+    <span>FAR ZERO <b id="ibFar">—</b></span>
+    <span>·</span>
+    <span>HOB <b id="ibHob">—</b></span>
+    <span>·</span>
+    <span id="ibUnit">MIL</span>
+  </div>
+</div>
+
+<!-- ══ RIGHT PANEL ══════════════════════════════════════════════ -->
+<div class="panel panel-right">
+
+  <div>
+    <div class="sec-label">Load Summary</div>
+    <div class="stat-block">
+      <div class="stat-row"><span class="sk">Round</span><span class="sv" id="s-cart">—</span></div>
+      <div class="stat-row"><span class="sk">Bullet</span><span class="sv" id="s-blt">—</span></div>
+      <div class="stat-row"><span class="sk">MV</span><span class="sv" id="s-mv">—</span></div>
+      <div class="stat-row"><span class="sk">BC G7</span><span class="sv" id="s-bc">—</span></div>
+      <div class="stat-row"><span class="sk">HOB</span><span class="sv" id="s-hob">—</span></div>
+      <div class="stat-row"><span class="sk">Max PBR ±3"</span><span class="sv" id="s-pbr">—</span></div>
+    </div>
+    <div class="zero-badges">
+      <span class="zbadge near" id="zb-near">NEAR ZERO —</span>
+      <span class="zbadge far"  id="zb-far">FAR ZERO —</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">Drop Table</div>
+    <table class="dtable">
+      <thead>
+        <tr><th>Yds</th><th>Drop"</th><th id="unitCol">MIL</th><th>fps</th></tr>
+      </thead>
+      <tbody id="dropBody"></tbody>
+    </table>
+  </div>
+
+  <div>
+    <div class="sec-label">Target Subtensions</div>
+    <table class="dtable">
+      <thead><tr id="subHead"></tr></thead>
+      <tbody id="subBody"></tbody>
+    </table>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const CARTS = {
+  '308':    { name:'7.62×51 NATO', weights:[150,168,175,185], bc:{150:.195,168:.243,175:.263,185:.290}, mv:{150:2820,168:2650,175:2600,185:2520} },
+  '556':    { name:'5.56×45 NATO', weights:[55,62,69,77],     bc:{55:.151,62:.172,69:.195,77:.222},    mv:{55:3240,62:3020,69:2900,77:2720} },
+  '6.5cm':  { name:'6.5 Creedmoor',weights:[120,130,140,147], bc:{120:.237,130:.266,140:.287,147:.300},mv:{120:2950,130:2875,140:2710,147:2695} },
+  '300wm':  { name:'300 Win Mag',  weights:[165,180,200,220], bc:{165:.253,180:.266,200:.293,220:.310},mv:{165:3100,180:2950,200:2800,220:2700} },
+  '338lm':  { name:'338 Lapua',    weights:[250,285,300],     bc:{250:.331,285:.371,300:.381},         mv:{250:2900,285:2750,300:2650} },
+  '50bmg':  { name:'.50 BMG',      weights:[647,660,750],     bc:{647:.560,660:.570,750:.610},         mv:{647:2910,660:2900,750:2820} },
+  '300blk': { name:'300 Blackout', weights:[110,125,147,220], bc:{110:.148,125:.183,147:.218,220:.294},mv:{110:2350,125:2215,147:1950,220:1010} },
+  '9mm':    { name:'9mm Luger',    weights:[115,124,147],     bc:{115:.095,124:.105,147:.120},         mv:{115:1180,124:1140,147:990} },
+};
+
+const TARGET_COLORS = ['#5B9BD5','#C8A84B','#E05252','#4CAF7A','#B07ACF','#E0A052'];
+const REF_RANGES = [100, 200, 300, 400, 500];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const S = {
+  cartridge:'308', weight:175, mv:2600, bc:0.275,
+  hob:1.5, farZero:200, unit:'mil', scale:60,
+  altitude:0, temp:59,
+  showBDC:true, showLabels:true, showWind:false, showPath:false, showTarget:true,
+  targets:[
+    { id:1, label:'Torso',    sizeIn:12, orientation:'vertical',   direction:'ltr', color:TARGET_COLORS[0], positions:{} },
+    { id:2, label:'Shoulder', sizeIn:18, orientation:'horizontal', direction:'down', color:TARGET_COLORS[1], positions:{} },
+  ],
+  nextId: 3
+};
+
+function defaultPosition(targetIndex, rangeIndex) {
+  // Auto-layout fallback before any drag: stagger by target row, spread by range column
+  const col = rangeIndex;
+  const row = targetIndex;
+  return {
+    x: -0.30 + col * 0.10,   // fraction of R, relative to center
+    y: -0.55 + row * 0.16
+  };
+}
+
+// ─── CANVAS ──────────────────────────────────────────────────────────────────
+const cv  = document.getElementById('rc');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height, CX = W/2, CY = H/2, R = W * 0.49;
+
+// ─── BALLISTICS ──────────────────────────────────────────────────────────────
+function airDensityRatio(altFt, tempF) {
+  return Math.pow(1 - 6.8755e-6 * altFt, 5.2559) * (518.67 / (tempF + 459.67));
+}
+function g7Cd(mach) {
+  if (mach < 0.8)  return 0.010;
+  if (mach < 0.9)  return 0.013;
+  if (mach < 1.0)  return 0.021;
+  if (mach < 1.1)  return 0.032;
+  if (mach < 1.2)  return 0.035;
+  if (mach < 1.4)  return 0.030;
+  if (mach < 1.8)  return 0.024;
+  if (mach < 2.5)  return 0.019;
+  return 0.016;
+}
+
+function simulate(mvFps, bcG7, farZeroYds, hobIn, altFt, tempF) {
+  const RANGES = [];
+  for (let r = 0;  r <= 100;  r += 5)  RANGES.push(r);
+  for (let r = 110; r <= 300; r += 10) RANGES.push(r);
+  for (let r = 325; r <= 500; r += 25) RANGES.push(r);
+  for (let r = 550; r <= 1000;r += 50) RANGES.push(r);
+
+  const rho  = airDensityRatio(altFt, tempF);
+  const sos  = 1116.45 * Math.sqrt((tempF + 459.67) / 518.67);
+  const hobFt = hobIn / 12;
+
+  function rawTraj(launchDeg, withWind) {
+    const ang = launchDeg * Math.PI / 180;
+    let vx = mvFps * Math.cos(ang);
+    let vy = mvFps * Math.sin(ang);
+    let vz = withWind ? 10 * 1.4667 : 0;
+    let x = 0, y = 0, z = 0, t = 0;
+    const dt = 0.0005;
+    const out = {};
+    while (t < 6) {
+      const v    = Math.sqrt(vx*vx + vy*vy + vz*vz);
+      const mach = v / sos;
+      const drag = g7Cd(mach) * rho * v * v / (2 * bcG7 * 144);
+      vx += -drag*(vx/v)*dt;
+      vy += (-32.174 - drag*(vy/v))*dt;
+      vz += -drag*(vz/Math.max(v,1))*dt;
+      x  += vx*dt; y += vy*dt; z += vz*dt;
+      t  += dt;
+      const xYds = x / 3;
+      const hit  = RANGES.find(r => Math.abs(xYds - r) < 0.35 && !(r in out));
+      if (hit !== undefined) out[hit] = { yFt:y, zFt:z, vFps:v };
+      if (xYds > 1050) break;
+    }
+    return out;
+  }
+
+  let lo = -2.0, hi = 2.0;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    const t   = rawTraj(mid, false);
+    const zp  = t[farZeroYds] || t[farZeroYds - 5] || t[farZeroYds + 5];
+    if (!zp) { hi = mid; continue; }
+    if (zp.yFt > 0) hi = mid; else lo = mid;
+  }
+  const bestAngle = (lo + hi) / 2;
+  const traj  = rawTraj(bestAngle, false);
+  const trajW = rawTraj(bestAngle, true);
+
+  const losH = rFt => hobFt * (1 - rFt / (farZeroYds * 3));
+
+  const points = {};
+  RANGES.forEach(r => {
+    const pt = traj[r]; if (!pt) return;
+    const dropFromLOS = losH(r * 3) - pt.yFt;
+    const driftFt = trajW[r] ? trajW[r].zFt : 0;
+    points[r] = { dropIn: dropFromLOS * 12, driftIn: driftFt * 12, vFps: pt.vFps };
+  });
+
+  let nearZero = null;
+  const preZero = RANGES.filter(r => r > 0 && r < farZeroYds && points[r]);
+  for (let i = 0; i < preZero.length - 1; i++) {
+    const r0 = preZero[i], r1 = preZero[i+1];
+    const d0 = points[r0].dropIn, d1 = points[r1].dropIn;
+    if (d0 > 0 && d1 <= 0) {
+      const frac = d0 / (d0 - d1);
+      nearZero = Math.round(r0 + frac * (r1 - r0));
+      break;
+    }
+    if (Math.abs(d0) < 0.25) { nearZero = r0; break; }
+  }
+
+  return { points, ranges: RANGES, nearZero, farZero: farZeroYds };
+}
+
+// ─── UNIT HELPERS ────────────────────────────────────────────────────────────
+function toUnit(inches, yards) {
+  return S.unit === 'mil'
+    ? inches / (yards * 0.036)
+    : inches / (yards * 0.010472);
+}
+function unitLabel() { return S.unit === 'mil' ? 'MIL' : 'MOA'; }
+function ppu() { return S.scale; }
+
+// ─── DRAG STATE ──────────────────────────────────────────────────────────────
+let drag = null; // { targetId, range, startX, startY, origPos }
+
+function getBracketRects(sim) {
+  // Returns array of {targetId, range, x, y, w, h} in CANVAS PIXEL coords for hit-testing
+  const rects = [];
+  S.targets.forEach((tgt, ti) => {
+    REF_RANGES.forEach((r, ri) => {
+      const pos = tgt.positions[r] || defaultPosition(ti, ri);
+      const cx = CX + pos.x * R;
+      const cy = CY + pos.y * R;
+      const u  = toUnit(tgt.sizeIn, r);
+      const sizePx = u * ppu();
+      let w, h;
+      if (tgt.orientation === 'horizontal') { w = sizePx + lw(20); h = lw(20); }
+      else                                   { w = lw(20); h = sizePx + lw(20); }
+      rects.push({ targetId: tgt.id, range: r, x: cx - w/2, y: cy - h/2, w, h, cx, cy });
+    });
+  });
+  return rects;
+}
+
+function canvasCoordsFromEvent(e) {
+  const rect = cv.getBoundingClientRect();
+  const scaleX = W / rect.width, scaleY = H / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+cv.addEventListener('mousedown', e => {
+  if (!S.showTarget) return;
+  const { x, y } = canvasCoordsFromEvent(e);
+  const rects = getBracketRects(window._sim);
+  // Find topmost match (search in reverse draw order)
+  for (let i = rects.length - 1; i >= 0; i--) {
+    const b = rects[i];
+    if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+      const tgt = S.targets.find(t => t.id === b.targetId);
+      const ti  = S.targets.indexOf(tgt);
+      const ri  = REF_RANGES.indexOf(b.range);
+      const curPos = tgt.positions[b.range] || defaultPosition(ti, ri);
+      drag = { targetId: b.targetId, range: b.range, startX: x, startY: y, origPos: { ...curPos } };
+      cv.style.cursor = 'grabbing';
+      break;
+    }
+  }
+});
+
+window.addEventListener('mousemove', e => {
+  if (!drag) {
+    // Hover cursor feedback
+    if (S.showTarget && window._sim) {
+      const { x, y } = canvasCoordsFromEvent(e);
+      const rects = getBracketRects(window._sim);
+      const hit = rects.some(b => x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h);
+      cv.style.cursor = hit ? 'grab' : 'default';
+    }
+    return;
+  }
+  const { x, y } = canvasCoordsFromEvent(e);
+  const dx = (x - drag.startX) / R;
+  const dy = (y - drag.startY) / R;
+  const tgt = S.targets.find(t => t.id === drag.targetId);
+  tgt.positions[drag.range] = { x: drag.origPos.x + dx, y: drag.origPos.y + dy };
+  draw();
+});
+
+window.addEventListener('mouseup', () => {
+  if (drag) { drag = null; cv.style.cursor = 'default'; updateSubTable(); }
+});
+
+// ─── DRAW ────────────────────────────────────────────────────────────────────
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI*2); ctx.clip();
+
+  const bg = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
+  bg.addColorStop(0, '#07070F'); bg.addColorStop(1, '#020205');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  const vig = ctx.createRadialGradient(CX, CY, R * 0.72, CX, CY, R);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+
+  drawSubtensionGrid();
+  drawCrosshair();
+
+  const sim = window._sim;
+  if (sim) {
+    if (S.showPath)   drawArc(sim);
+    if (S.showBDC)    drawBDC(sim);
+    if (S.showTarget) drawTargetRefs(sim);
+  }
+
+  ctx.restore();
+}
+
+function lw(f=1) { return f * (W / 800); }
+function line(x1,y1,x2,y2) { ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
+
+function drawCrosshair() {
+  const gap = ppu() * 0.35;
+  ctx.strokeStyle = 'rgba(235,235,235,.93)';
+  ctx.lineWidth   = lw(1.4);
+  ctx.lineCap     = 'round';
+  line(CX - R*.96, CY, CX - gap, CY);
+  line(CX + gap,   CY, CX + R*.96, CY);
+  line(CX, CY - R*.96, CX, CY - gap);
+  line(CX, CY + gap,   CX, CY + R*.96);
+}
+
+function drawSubtensionGrid() {
+  const maxU = Math.floor(R / ppu());
+  for (let u = 1; u <= maxU; u++) {
+    const px = ppu() * u;
+    if (px > R * .95) break;
+    const isMaj = u % 5 === 0;
+    const alpha  = isMaj ? .28 : .10;
+    const tickH  = lw(isMaj ? 16 : 8);
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth   = lw(isMaj ? 0.8 : 0.5);
+    vtick(CX + px, CY, tickH); vtick(CX - px, CY, tickH);
+    htick(CX, CY + px, tickH); htick(CX, CY - px, tickH);
+    if (isMaj && u <= maxU - 1) {
+      ctx.fillStyle  = 'rgba(200,168,75,.50)';
+      ctx.font       = `${lw(9)}px JetBrains Mono`;
+      ctx.textAlign  = 'center';
+      const labelPx = Math.min(px, R * 0.88);
+      ctx.fillText(u,  CX + labelPx, CY - lw(14));
+      ctx.fillText(u,  CX - labelPx, CY - lw(14));
+      ctx.textAlign = 'right';
+      ctx.fillText(u,  CX - lw(14), CY + labelPx + lw(4));
+    }
+  }
+}
+function vtick(x,y,h) { ctx.beginPath(); ctx.moveTo(x,y-h); ctx.lineTo(x,y+h); ctx.stroke(); }
+function htick(x,y,h) { ctx.beginPath(); ctx.moveTo(x-h,y); ctx.lineTo(x+h,y); ctx.stroke(); }
+
+function drawArc(sim) {
+  ctx.beginPath();
+  let first = true;
+  sim.ranges.forEach(r => {
+    if (r === 0) return;
+    const pt = sim.points[r]; if (!pt) return;
+    const u  = toUnit(pt.dropIn, r);
+    const py = CY + u * ppu();
+    if (Math.abs(py - CY) > R * .93) return;
+    if (first) { ctx.moveTo(CX, py); first = false; } else ctx.lineTo(CX, py);
+  });
+  ctx.strokeStyle = 'rgba(200,168,75,.22)';
+  ctx.lineWidth   = lw(2);
+  ctx.setLineDash([lw(5), lw(5)]);
+  ctx.stroke(); ctx.setLineDash([]);
+}
+
+function drawBDC(sim) {
+  const bdcRanges = [100,150,200,250,300,350,400,450,500,550,600,700,800];
+  bdcRanges.forEach(r => {
+    const pt = sim.points[r]; if (!pt) return;
+    const u  = toUnit(pt.dropIn, r);
+    const py = CY + u * ppu();
+    if (py < CY - R*.93 || py > CY + R*.93) return;
+
+    const isFarZero  = Math.abs(pt.dropIn) < 0.6;
+    const isAboveLOS = pt.dropIn < -0.5;
+    const isMajor    = r % 100 === 0;
+
+    let color;
+    if (isFarZero)   color = 'rgba(76,175,122,.95)';
+    else if (isAboveLOS) color = 'rgba(91,155,213,.88)';
+    else             color = 'rgba(224,82,82,.85)';
+
+    const hw = lw(isMajor ? 32 : 18);
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = lw(isMajor ? 1.8 : 1.0);
+    line(CX - hw, py, CX + hw, py);
+
+    if (S.showWind && pt.driftIn) {
+      const du = toUnit(pt.driftIn, r);
+      const dx = CX + du * ppu();
+      ctx.fillStyle = 'rgba(91,155,213,.85)';
+      ctx.beginPath(); ctx.arc(dx, py, lw(3.5), 0, Math.PI*2); ctx.fill();
+    }
+
+    if (S.showLabels && isMajor) {
+      ctx.fillStyle = color;
+      ctx.font      = `500 ${lw(11)}px JetBrains Mono`;
+      ctx.textAlign = 'left';
+      ctx.fillText(`${r}`, CX + hw + lw(7), py + lw(4));
+      const uStr = u.toFixed(1);
+      ctx.fillStyle = 'rgba(200,168,75,.60)';
+      ctx.font      = `${lw(8.5)}px JetBrains Mono`;
+      ctx.fillText(`${uStr}${S.unit}`, CX + hw + lw(7), py + lw(15));
+    }
+  });
+}
+
+// ─── TARGET REFERENCES — draggable, orientation/direction aware ──────────────
+function drawTargetRefs(sim) {
+  S.targets.forEach((tgt, ti) => {
+    REF_RANGES.forEach((r, ri) => {
+      const pos = tgt.positions[r] || defaultPosition(ti, ri);
+      const cx  = CX + pos.x * R;
+      const cy  = CY + pos.y * R;
+      const u   = toUnit(tgt.sizeIn, r);
+      const sizePx = u * ppu();
+      const half   = sizePx / 2;
+      const capLen = lw(9);
+
+      ctx.strokeStyle = tgt.color;
+      ctx.lineWidth   = lw(1.2);
+      ctx.lineCap     = 'butt';
+
+      if (tgt.orientation === 'horizontal') {
+        // Bar spans horizontally; cap direction (up/down) set by tgt.direction
+        const capDir = tgt.direction === 'up' ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - half, cy);
+        ctx.lineTo(cx - half, cy + capDir * capLen);
+        ctx.moveTo(cx - half, cy);
+        ctx.lineTo(cx + half, cy);
+        ctx.moveTo(cx + half, cy);
+        ctx.lineTo(cx + half, cy + capDir * capLen);
+        ctx.stroke();
+
+        // Value label
+        ctx.fillStyle = tgt.color;
+        ctx.font      = `${lw(8.5)}px JetBrains Mono`;
+        ctx.textAlign = 'center';
+        const labelY  = capDir === 1 ? cy + capLen + lw(11) : cy - capLen - lw(5);
+        ctx.fillText(u.toFixed(2), cx, labelY);
+        // Range tag
+        ctx.font = `${lw(7)}px JetBrains Mono`;
+        ctx.fillStyle = `${tgt.color}99`;
+        const tagY = capDir === 1 ? labelY + lw(10) : labelY - lw(10);
+        ctx.fillText(`${r}y`, cx, tagY);
+
+      } else {
+        // Vertical bar; cap direction (ltr/rtl) set by tgt.direction
+        const capDir = tgt.direction === 'rtl' ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - half);
+        ctx.lineTo(cx + capDir * capLen, cy - half);
+        ctx.moveTo(cx, cy - half);
+        ctx.lineTo(cx, cy + half);
+        ctx.moveTo(cx, cy + half);
+        ctx.lineTo(cx + capDir * capLen, cy + half);
+        ctx.stroke();
+
+        ctx.fillStyle = tgt.color;
+        ctx.font      = `${lw(8.5)}px JetBrains Mono`;
+        const labelX  = capDir === 1 ? cx + capLen + lw(5) : cx - capLen - lw(5);
+        ctx.textAlign = capDir === 1 ? 'left' : 'right';
+        ctx.fillText(u.toFixed(2), labelX, cy + lw(3));
+        ctx.font = `${lw(7)}px JetBrains Mono`;
+        ctx.fillStyle = `${tgt.color}99`;
+        ctx.fillText(`${r}y`, labelX, cy + lw(15));
+      }
+
+      // Drag handle dot at anchor point (subtle, only visible on hover ideally, but keep simple static)
+      ctx.fillStyle = `${tgt.color}55`;
+      ctx.beginPath(); ctx.arc(cx, cy, lw(2.2), 0, Math.PI*2); ctx.fill();
+    });
+
+    // Group label, placed near the first (100yd) bracket
+    const pos0 = tgt.positions[REF_RANGES[0]] || defaultPosition(ti, 0);
+    const gx = CX + pos0.x * R;
+    const gy = CY + pos0.y * R;
+    ctx.fillStyle = tgt.color;
+    ctx.font      = `600 ${lw(9.5)}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    const labelOffset = tgt.orientation === 'horizontal' ? lw(28) : lw(28);
+    ctx.fillText(`${tgt.label} (${tgt.sizeIn}")`, gx, gy - labelOffset);
+  });
+}
+
+// ─── TABLES ──────────────────────────────────────────────────────────────────
+function updateDropTable(sim) {
+  document.getElementById('unitCol').textContent = unitLabel();
+  const body = document.getElementById('dropBody');
+  body.innerHTML = '';
+  const show = sim.ranges.filter(r => r > 0 && r % 50 === 0);
+  show.forEach(r => {
+    const pt = sim.points[r]; if (!pt) return;
+    const u   = toUnit(pt.dropIn, r);
+    const isZ = Math.abs(pt.dropIn) < 0.6;
+    const cls = isZ ? 'c-zero' : pt.dropIn < 0 ? 'c-pos' : 'c-neg';
+    const sign = pt.dropIn > 0 ? '+' : '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="${isZ?'c-zero':'c-dim'}">${r}</td>
+      <td class="${cls}">${sign}${pt.dropIn.toFixed(1)}"</td>
+      <td class="${cls}">${u.toFixed(2)}</td>
+      <td class="c-dim">${Math.round(pt.vFps)}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function updateSubTable() {
+  const head = document.getElementById('subHead');
+  const body = document.getElementById('subBody');
+  head.innerHTML = '<th>Target</th>' + REF_RANGES.map(r=>`<th>${r}y</th>`).join('');
+  body.innerHTML = '';
+  S.targets.forEach(tgt => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:${tgt.color}">${tgt.label}</td>` +
+      REF_RANGES.map(r => `<td class="c-dim">${toUnit(tgt.sizeIn, r).toFixed(2)}</td>`).join('');
+    body.appendChild(tr);
+  });
+}
+
+function updateStats(sim) {
+  const cart = CARTS[S.cartridge];
+  document.getElementById('s-cart').textContent = cart.name;
+  document.getElementById('s-blt').textContent  = `${S.weight} gr`;
+  document.getElementById('s-mv').textContent   = `${S.mv} fps`;
+  document.getElementById('s-bc').textContent   = S.bc.toFixed(3);
+  document.getElementById('s-hob').textContent  = `${S.hob.toFixed(1)}"`;
+  let pbr = 0;
+  sim.ranges.forEach(r => { if (sim.points[r] && Math.abs(sim.points[r].dropIn) <= 3) pbr = r; });
+  document.getElementById('s-pbr').textContent = `~${pbr} yds`;
+  const nz = sim.nearZero;
+  document.getElementById('zb-near').textContent = `NEAR ZERO ${nz ? nz+'yd' : '—'}`;
+  document.getElementById('zb-far').textContent  = `FAR ZERO ${S.farZero}yd`;
+  document.getElementById('ibNear').textContent  = nz ? `${nz}yd` : '—';
+  document.getElementById('ibFar').textContent   = `${S.farZero}yd`;
+  document.getElementById('ibHob').textContent   = `${S.hob.toFixed(1)}"`;
+  document.getElementById('ibUnit').textContent  = unitLabel();
+  document.getElementById('hdrBadge').textContent = `${cart.name} · ${S.weight}gr · ${S.farZero}yd zero`;
+}
+
+// ─── MASTER UPDATE ────────────────────────────────────────────────────────────
+function update() {
+  const sim = simulate(S.mv, S.bc, S.farZero, S.hob, S.altitude, S.temp);
+  window._sim = sim;
+  draw();
+  updateDropTable(sim);
+  updateStats(sim);
+  updateSubTable();
+}
+
+// ─── TARGET CARD UI ────────────────────────────────────────────────────────────
+function renderTargetCards() {
+  const cont = document.getElementById('targetCards');
+  cont.innerHTML = '';
+  S.targets.forEach((t) => {
+    const card = document.createElement('div');
+    card.className = 'target-card';
+    const dirOptionsH = `
+      <button class="tog ${t.direction==='down'?'on':''}" data-id="${t.id}" data-f="direction" data-v="down">↓ Down</button>
+      <button class="tog ${t.direction==='up'?'on':''}" data-id="${t.id}" data-f="direction" data-v="up">↑ Up</button>`;
+    const dirOptionsV = `
+      <button class="tog ${t.direction==='ltr'?'on':''}" data-id="${t.id}" data-f="direction" data-v="ltr">→ L→R</button>
+      <button class="tog ${t.direction==='rtl'?'on':''}" data-id="${t.id}" data-f="direction" data-v="rtl">← R→L</button>`;
+    card.innerHTML = `
+      <div class="target-card-head">
+        <input type="text"   value="${t.label}"  data-id="${t.id}" data-f="label"  placeholder="Label">
+        <input type="number" value="${t.sizeIn}" data-id="${t.id}" data-f="sizeIn" min="1" max="400" step="0.5">
+        <button class="del-btn" data-id="${t.id}">×</button>
+      </div>
+      <div class="target-card-controls" style="margin-bottom:5px;">
+        <span class="target-color-dot" style="background:${t.color}"></span>
+        <button class="tog ${t.orientation==='horizontal'?'on':''}" data-id="${t.id}" data-f="orientation" data-v="horizontal">Horizontal</button>
+        <button class="tog ${t.orientation==='vertical'?'on':''}" data-id="${t.id}" data-f="orientation" data-v="vertical">Vertical</button>
+      </div>
+      <div class="target-card-controls">
+        ${t.orientation === 'horizontal' ? dirOptionsH : dirOptionsV}
+      </div>`;
+    cont.appendChild(card);
+  });
+
+  cont.querySelectorAll('input').forEach(el => {
+    el.addEventListener('change', e => {
+      const id = +e.target.dataset.id, f = e.target.dataset.f;
+      const tgt = S.targets.find(t => t.id === id);
+      tgt[f] = f === 'sizeIn' ? +e.target.value : e.target.value;
+      update();
+    });
+  });
+  cont.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = +e.target.dataset.id;
+      S.targets = S.targets.filter(t => t.id !== id);
+      renderTargetCards(); update();
+    });
+  });
+  cont.querySelectorAll('.tog[data-f]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = +e.target.dataset.id, f = e.target.dataset.f, v = e.target.dataset.v;
+      const tgt = S.targets.find(t => t.id === id);
+      tgt[f] = v;
+      if (f === 'orientation') {
+        // Reset direction to sensible default for new orientation
+        tgt.direction = v === 'horizontal' ? 'down' : 'ltr';
+      }
+      renderTargetCards(); update();
+    });
+  });
+}
+
+document.getElementById('addTarget').addEventListener('click', () => {
+  const color = TARGET_COLORS[S.targets.length % TARGET_COLORS.length];
+  S.targets.push({
+    id: S.nextId++, label:'Target', sizeIn:18,
+    orientation:'horizontal', direction:'down', color, positions:{}
+  });
+  renderTargetCards(); update();
+});
+
+document.getElementById('resetLayout').addEventListener('click', () => {
+  S.targets.forEach(t => t.positions = {});
+  update();
+});
+
+// ─── WEIGHT SELECT ────────────────────────────────────────────────────────────
+function populateWeights() {
+  const cart = CARTS[S.cartridge];
+  const sel  = document.getElementById('bulletWeight');
+  sel.innerHTML = '';
+  cart.weights.forEach(w => {
+    const o = document.createElement('option');
+    o.value = w; o.textContent = `${w} gr`;
+    if (w === S.weight) o.selected = true;
+    sel.appendChild(o);
+  });
+  const w = cart.weights.includes(S.weight) ? S.weight : cart.weights[1];
+  S.weight = w; S.bc = cart.bc[w]; S.mv = cart.mv[w];
+  document.getElementById('bc').value  = S.bc;
+  document.getElementById('mv').value  = S.mv;
+  document.getElementById('mvVal').textContent = S.mv + ' fps';
+}
+
+// ─── EVENT WIRING ────────────────────────────────────────────────────────────
+document.getElementById('cartridge').addEventListener('change', e => {
+  S.cartridge = e.target.value; populateWeights(); update();
+});
+document.getElementById('bulletWeight').addEventListener('change', e => {
+  S.weight = +e.target.value;
+  const c  = CARTS[S.cartridge];
+  S.bc = c.bc[S.weight]; S.mv = c.mv[S.weight];
+  document.getElementById('bc').value = S.bc;
+  document.getElementById('mv').value = S.mv;
+  document.getElementById('mvVal').textContent = S.mv + ' fps';
+  update();
+});
+document.getElementById('mv').addEventListener('input', e => {
+  S.mv = +e.target.value;
+  document.getElementById('mvVal').textContent = S.mv + ' fps';
+  update();
+});
+document.getElementById('bc').addEventListener('change', e => { S.bc = +e.target.value; update(); });
+document.getElementById('hob').addEventListener('input', e => {
+  S.hob = +e.target.value;
+  document.getElementById('hobVal').textContent = S.hob.toFixed(1) + '"';
+  update();
+});
+
+const zSlider = document.getElementById('zeroSlider');
+const zNum    = document.getElementById('zeroNum');
+zSlider.addEventListener('input', e => { S.farZero = +e.target.value; zNum.value = S.farZero; update(); });
+zNum.addEventListener('change', e => {
+  S.farZero = Math.max(25, Math.min(600, +e.target.value));
+  zSlider.value = S.farZero; zNum.value = S.farZero; update();
+});
+
+document.querySelectorAll('[data-unit]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-unit]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on'); S.unit = btn.dataset.unit; update();
+  });
+});
+document.getElementById('scale').addEventListener('input', e => {
+  S.scale = +e.target.value;
+  document.getElementById('scaleVal').textContent = `${S.scale} px/${unitLabel()}`;
+  update();
+});
+document.getElementById('altitude').addEventListener('change', e => { S.altitude = +e.target.value; update(); });
+document.getElementById('temp').addEventListener('input', e => {
+  S.temp = +e.target.value;
+  document.getElementById('tempVal').textContent = S.temp + ' °F';
+  update();
+});
+['showBDC','showLabels','showWind','showPath','showTarget'].forEach(id => {
+  document.getElementById(id).addEventListener('change', e => { S[id] = e.target.checked; update(); });
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.getElementById('hobVal').textContent   = S.hob.toFixed(1) + '"';
+document.getElementById('tempVal').textContent  = S.temp + ' °F';
+document.getElementById('scaleVal').textContent = `${S.scale} px/${unitLabel()}`;
+populateWeights();
+renderTargetCards();
+update();
+</script>
+</body>
+</html>

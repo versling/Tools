@@ -1,0 +1,220 @@
+{
+	[
+	  {
+		"barrelLength": "20",
+		"grain": 55,
+		"minVelocity": 3050,
+		"medianVelocity": 3120,
+		"maxVelocity": 3250,
+		"g7BcRange": [0.135, 0.150],
+		"medianG7Bc": 0.142
+	  },
+	  {
+		"barrelLength": "20",
+		"grain": 62,
+		"minVelocity": 3000,
+		"medianVelocity": 3100,
+		"maxVelocity": 3200,
+		"g7BcRange": [0.151, 0.158],
+		"medianG7Bc": 0.155
+	  },
+	  {
+		"barrelLength": "20",
+		"grain": 69,
+		"minVelocity": 2700,
+		"medianVelocity": 2780,
+		"maxVelocity": 2850,
+		"g7BcRange": [0.167, 0.169],
+		"medianG7Bc": 0.168
+	  },
+	  {
+		"barrelLength": "20",
+		"grain": 77,
+		"minVelocity": 2700,
+		"medianVelocity": 2750,
+		"maxVelocity": 2800,
+		"g7BcRange": [0.182, 0.190],
+		"medianG7Bc": 0.186
+	  },
+	  {
+		"barrelLength": "18",
+		"grain": 55,
+		"minVelocity": 2975,
+		"medianVelocity": 3060,
+		"maxVelocity": 3175,
+		"g7BcRange": [0.135, 0.150],
+		"medianG7Bc": 0.142
+	  },
+	  {
+		"barrelLength": "18",
+		"grain": 62,
+		"minVelocity": 2925,
+		"medianVelocity": 3025,
+		"maxVelocity": 3125,
+		"g7BcRange": [0.151, 0.158],
+		"medianG7Bc": 0.155
+	  },
+	  {
+		"barrelLength": "18",
+		"grain": 69,
+		"minVelocity": 2650,
+		"medianVelocity": 2730,
+		"maxVelocity": 2800,
+		"g7BcRange": [0.167, 0.169],
+		"medianG7Bc": 0.168
+	  },
+	  {
+		"barrelLength": "18",
+		"grain": 77,
+		"minVelocity": 2680,
+		"medianVelocity": 2740,
+		"maxVelocity": 2780,
+		"g7BcRange": [0.182, 0.190],
+		"medianG7Bc": 0.186
+	  },
+	  {
+		"barrelLength": "16",
+		"grain": 55,
+		"minVelocity": 2900,
+		"medianVelocity": 3000,
+		"maxVelocity": 3100,
+		"g7BcRange": [0.135, 0.150],
+		"medianG7Bc": 0.142
+	  },
+	  {
+		"barrelLength": "16",
+		"grain": 62,
+		"minVelocity": 2850,
+		"medianVelocity": 2950,
+		"maxVelocity": 3050,
+		"g7BcRange": [0.151, 0.158],
+		"medianG7Bc": 0.155
+	  },
+	  {
+		"barrelLength": "16",
+		"grain": 69,
+		"minVelocity": 2600,
+		"medianVelocity": 2680,
+		"maxVelocity": 2750,
+		"g7BcRange": [0.167, 0.169],
+		"medianG7Bc": 0.168
+	  },
+	  {
+		"barrelLength": "16",
+		"grain": 77,
+		"minVelocity": 2650,
+		"medianVelocity": 2680,
+		"maxVelocity": 2720,
+		"g7BcRange": [0.182, 0.190],
+		"medianG7Bc": 0.186
+	  },
+	  {
+		"barrelLength": "14.5",
+		"grain": 55,
+		"minVelocity": 2800,
+		"medianVelocity": 2900,
+		"maxVelocity": 3000,
+		"g7BcRange": [0.135, 0.150],
+		"medianG7Bc": 0.142
+	  },
+	  {
+		"barrelLength": "14.5",
+		"grain": 62,
+		"minVelocity": 2750,
+		"medianVelocity": 2850,
+		"maxVelocity": 2950,
+		"g7BcRange": [0.151, 0.158],
+		"medianG7Bc": 0.155
+	  },
+	  {
+		"barrelLength": "14.5",
+		"grain": 69,
+		"minVelocity": 2500,
+		"medianVelocity": 2580,
+		"maxVelocity": 2650,
+		"g7BcRange": [0.167, 0.169],
+		"medianG7Bc": 0.168
+	  },
+	  {
+		"barrelLength": "14.5",
+		"grain": 77,
+		"minVelocity": 2550,
+		"medianVelocity": 2590,
+		"maxVelocity": 2650,
+		"g7BcRange": [0.182, 0.190],
+		"medianG7Bc": 0.186
+	  },
+	  {
+		"barrelLength": "12.5",
+		"grain": 55,
+		"minVelocity": 2650,
+		"medianVelocity": 2750,
+		"maxVelocity": 2850,
+		"g7BcRange": [0.135, 0.150],
+		"medianG7Bc": 0.142
+	  },
+	  {
+		"barrelLength": "12.5",
+		"grain": 62,
+		"minVelocity": 2650,
+		"medianVelocity": 2725,
+		"maxVelocity": 2800,
+		"g7BcRange": [0.151, 0.158],
+		"medianG7Bc": 0.155
+	  },
+	  {
+		"barrelLength": "12.5",
+		"grain": 69,
+		"minVelocity": 2400,
+		"medianVelocity": 2480,
+		"maxVelocity": 2550,
+		"g7BcRange": [0.167, 0.169],
+		"medianG7Bc": 0.168
+	  },
+	  {
+		"barrelLength": "12.5",
+		"grain": 77,
+		"minVelocity": 2450,
+		"medianVelocity": 2520,
+		"maxVelocity": 2580,
+		"g7BcRange": [0.182, 0.190],
+		"medianG7Bc": 0.186
+	  },
+	  {
+		"barrelLength": "10.5",
+		"grain": 55,
+		"minVelocity": 2450,
+		"medianVelocity": 2550,
+		"maxVelocity": 2650,
+		"g7BcRange": [0.135, 0.150],
+		"medianG7Bc": 0.142
+	  },
+	  {
+		"barrelLength": "10.5",
+		"grain": 62,
+		"minVelocity": 2450,
+		"medianVelocity": 2550,
+		"maxVelocity": 2650,
+		"g7BcRange": [0.151, 0.158],
+		"medianG7Bc": 0.155
+	  },
+	  {
+		"barrelLength": "10.5",
+		"grain": 69,
+		"minVelocity": 2250,
+		"medianVelocity": 2350,
+		"maxVelocity": 2450,
+		"g7BcRange": [0.167, 0.169],
+		"medianG7Bc": 0.168
+	  },
+	  {
+		"barrelLength": "10.5",
+		"grain": 77,
+		"minVelocity": 2300,
+		"medianVelocity": 2400,
+		"maxVelocity": 2500,
+		"g7BcRange": [0.182, 0.190],
+		"medianG7Bc": 0.186
+	  }
+	]
+}
